@@ -1,0 +1,96 @@
+import Events from "@/components/Events";
+import Footer from "@/components/Footer";
+import Hero from "@/components/Hero";
+import Menu from "@/components/Menu";
+import NavBar from "@/components/NavBar";
+import Timeline from "@/components/Timeline";
+import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
+
+const Index = () => {
+  const location = useLocation();
+  const [scrollPosition, setScrollPosition] = useState(0);
+
+  // Handle scroll for parallax effect
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrollPosition(window.scrollY);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
+  }, []);
+
+  // Handle navigation when coming from another page with a section parameter
+  useEffect(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const section = searchParams.get("section");
+
+    if (section) {
+      setTimeout(() => {
+        const element = document.getElementById(section);
+        if (element) {
+          element.scrollIntoView({ behavior: "smooth" });
+        }
+      }, 100); // Small delay to ensure page is loaded
+    }
+  }, [location]);
+
+  return (
+    <div className="min-h-screen bg-gray-50 scroll-smooth">
+      <NavBar />
+      <main className="pt-0">
+        {" "}
+        {/* Removed top padding */}
+        <section
+          id="inicio"
+          className="opacity-0 animate-fade-up animate-fill-forwards"
+        >
+          <Hero />
+        </section>
+        <section
+          id="eventos"
+          className="opacity-0 animate-fade-up animate-fill-forwards animate-delay-100"
+        >
+          <Events />
+        </section>
+        <div
+          className="chess-pattern-divider h-60 w-full bg-fixed bg-center bg-no-repeat"
+          style={{
+            backgroundImage:
+              "url('https://images.pexels.com/photos/3879495/pexels-photo-3879495.jpeg')",
+            backgroundSize: "fixed",
+            backgroundPosition: "cover",
+          }}
+        ></div>
+        <section
+          id="menu"
+          className="opacity-0 animate-fade-up animate-fill-forwards animate-delay-200"
+        >
+          <Menu />
+        </section>
+        <div
+          className="chess-pattern-divider h-60 w-full bg-fixed bg-center bg-no-repeat"
+          style={{
+            backgroundImage:
+              "url('https://images.pexels.com/photos/13311961/pexels-photo-13311961.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1')",
+            backgroundAttachment: "fixed",
+            backgroundSize: "cover",
+          }}
+        ></div>
+        <section
+          id="timeline"
+          className="opacity-0 animate-fade-up animate-fill-forwards animate-delay-400"
+        >
+          <Timeline />
+        </section>
+      </main>
+
+      <Footer />
+    </div>
+  );
+};
+
+export default Index;
