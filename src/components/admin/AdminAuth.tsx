@@ -23,7 +23,7 @@ const AdminAuth = ({ onAuthenticated }: AdminAuthProps) => {
     try {
       // For simplicity, we'll just check if it's our admin email/password
       // In a production app, you would use proper authentication
-      if (email === "admin@manacafe.com" && password === "admin123!") {
+      if (email === "admin@frikioteca.com" && password === "admin123!") {
         localStorage.setItem("adminAuth", "true");
         onAuthenticated();
         toast.success("Acceso concedido");

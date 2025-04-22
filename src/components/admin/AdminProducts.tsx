@@ -34,6 +34,7 @@ import {
   Plus,
   Search,
   Trash2,
+  Camera,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -53,7 +54,8 @@ type Product = {
   price: number;
   category: string;
   image: string;
-  stock: number; // Add stock field
+  stock: number;
+  model_3d?: string; // Add field for 3D model URL
 };
 
 const fetchProducts = async (): Promise<Product[]> => {
@@ -77,8 +79,10 @@ const AdminProducts = () => {
     price: 0,
     category: "",
     image: "",
-    stock: 0, // Add stock to form data
+    stock: 0,
+    model_3d: "", // Add field for 3D model URL
   });
+  const [modelFile, setModelFile] = useState<File | null>(null);
 
   // Fetch products from Supabase
   const {
@@ -166,7 +170,8 @@ const AdminProducts = () => {
         price: product.price,
         category: product.category,
         image: product.image,
-        stock: product.stock || 0, // Set stock from product
+        stock: product.stock || 0,
+        model_3d: product.model_3d || "", // Initialize model_3d field
       });
       setCurrentProduct(product);
     } else {
@@ -176,7 +181,8 @@ const AdminProducts = () => {
         price: 0,
         category: "",
         image: "",
-        stock: 0, // Initialize stock to 0
+        stock: 0,
+        model_3d: "", // Initialize empty model_3d field
       });
       setCurrentProduct(null);
     }
@@ -204,9 +210,46 @@ const AdminProducts = () => {
     });
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      setModelFile(e.target.files[0]);
+    }
+  };
 
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    let modelUrl = formData.model_3d;
+    
+    // Si hay un archivo seleccionado, súbelo a Supabase Storage
+    if (modelFile) {
+      try {
+        const filename = `${Date.now()}-${modelFile.name}`;
+        const { data, error } = await supabase.storage
+          .from('models')
+          .upload(filename, modelFile);
+          
+        if (error) throw error;
+        
+        // Obtén la URL pública del archivo
+        const { data: urlData } = supabase.storage
+          .from('models')
+          .getPublicUrl(filename);
+          
+        modelUrl = urlData.publicUrl;
+      } catch (error) {
+        console.error("Error uploading file:", error);
+        toast.error("Error al subir el archivo 3D");
+        return;
+      }
+    }
+    
+    // Continúa con la lógica existente pero usa modelUrl
+    const productData = {
+      ...formData,
+      model_3d: modelUrl
+    };
+    
     if (!formData.name || !formData.category || !formData.image) {
       toast.error("Por favor completa todos los campos requeridos");
       return;
@@ -216,11 +259,11 @@ const AdminProducts = () => {
       // Update existing product
       updateProductMutation.mutate({
         id: currentProduct.id,
-        ...formData,
+        ...productData,
       });
     } else {
       // Create new product
-      createProductMutation.mutate(formData);
+      createProductMutation.mutate(productData);
     }
   };
 
@@ -430,6 +473,28 @@ const AdminProducts = () => {
                     required
                   />
                   <Image className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
+                </div>
+              </div>
+              {/* Add 3D model field */}
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="model_3d" className="text-right">
+                  Modelo 3D (GLB)
+                </Label>
+                <div className="col-span-3">
+                  <div className="flex gap-2">
+                    <Input 
+                      type="file" 
+                      id="model_3d_file"
+                      accept=".glb"
+                      onChange={handleFileChange} 
+                      className="flex-1" 
+                    />
+                    {formData.model_3d && (
+                      <div className="text-xs text-muted-foreground mt-1">
+                        Archivo actual: {formData.model_3d.split('/').pop()}
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

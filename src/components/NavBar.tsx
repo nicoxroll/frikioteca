@@ -93,6 +93,17 @@ const NavBar = () => {
                     ? "text-[#2851a3] hover:text-[#2851a3] hover:bg-blue-50"
                     : "text-white hover:text-white hover:bg-white/10"
                 }`}
+                onClick={() => navigateToPage("/productos")}
+              >
+                Productos
+              </Button>
+              <Button
+                variant="ghost"
+                className={`font-playfair ${
+                  scrolled
+                    ? "text-[#2851a3] hover:text-[#2851a3] hover:bg-blue-50"
+                    : "text-white hover:text-white hover:bg-white/10"
+                }`}
                 onClick={() => navigateToPage("/nosotros")}
               >
                 Nosotros
@@ -125,6 +136,13 @@ const NavBar = () => {
                     onClick={() => navigateToPage("/carta")}
                   >
                     Carta
+                  </Button>
+                  <Button
+                    variant="ghost"
+                    className="font-playfair text-[#2851a3] justify-start"
+                    onClick={() => navigateToPage("/productos")}
+                  >
+                    Productos
                   </Button>
                   <Button
                     variant="ghost"

@@ -63,7 +63,7 @@ const Location = () => {
                   Tel: (221) 555-1234
                 </p>
                 <p className="text-gray-600 font-playfair">
-                  Email: info@manacafe.com
+                  Email: info@frikioteca.com
                 </p>
               </div>
             </div>
