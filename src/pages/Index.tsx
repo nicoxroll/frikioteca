@@ -3,7 +3,6 @@ import Footer from "@/components/Footer";
 import Hero from "@/components/Hero";
 import Menu from "@/components/Menu";
 import NavBar from "@/components/NavBar";
-import Timeline from "@/components/Timeline";
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 
@@ -80,12 +79,6 @@ const Index = () => {
             backgroundSize: "cover",
           }}
         ></div>
-        <section
-          id="timeline"
-          className="opacity-0 animate-fade-up animate-fill-forwards animate-delay-400"
-        >
-          <Timeline />
-        </section>
       </main>
 
       <Footer />
