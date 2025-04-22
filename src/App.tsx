@@ -10,27 +10,30 @@ import Index from "./pages/Index";
 import NosotrosPage from "./pages/Nosotros";
 import NotFound from "./pages/NotFound";
 import Productos from "./pages/Productos";
+import { ThemeProvider } from "./providers/ThemeProvider";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <TooltipProvider>
-      <Toaster />
-      <Sonner />
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/carta" element={<Carta />} />
-          <Route path="/productos" element={<Productos />} />
-          <Route path="/admin" element={<Admin />} />
-          <Route path="/nosotros" element={<NosotrosPage />} />
-          <Route path="/eventos" element={<EventosPage />} />
-          {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
-          <Route path="*" element={<NotFound />} />
-        </Routes>
-      </BrowserRouter>
-    </TooltipProvider>
+    <ThemeProvider defaultTheme="light">
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Index />} />
+            <Route path="/carta" element={<Carta />} />
+            <Route path="/productos" element={<Productos />} />
+            <Route path="/admin" element={<Admin />} />
+            <Route path="/nosotros" element={<NosotrosPage />} />
+            <Route path="/eventos" element={<EventosPage />} />
+            {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 

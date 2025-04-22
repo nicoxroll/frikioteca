@@ -36,10 +36,10 @@
   }
  
   .dark {
-    --background: 222.2 84% 4.9%;
+    --background: 222.2 65% 12%; /* Lighter dark blue-gray background (was 222.2 84% 4.9%) */
     --foreground: 210 40% 98%;
  
-    --card: 222.2 84% 4.9%;
+    --card: 222.2 65% 10%; /* Slightly darker than background */
     --card-foreground: 210 40% 98%;
  
     --popover: 222.2 84% 4.9%;
@@ -143,4 +143,79 @@
 
 .animate-delay-400 {
   animation-delay: 400ms;
+}
+
+/* Dark mode overrides */
+.dark body {
+  @apply bg-gray-900 text-gray-100;
+}
+
+.dark .bg-white {
+  @apply bg-gray-800;
+}
+
+.dark .bg-gray-50 {
+  @apply bg-gray-900;
+}
+
+.dark .text-gray-600 {
+  @apply text-gray-400;
+}
+
+.dark .text-gray-700 {
+  @apply text-gray-300;
+}
+
+.dark .shadow-lg, 
+.dark .shadow-md, 
+.dark .shadow-xl, 
+.dark .shadow {
+  @apply shadow-gray-900;
+}
+
+.dark .bg-blue-50 {
+  @apply bg-blue-900/20;
+}
+
+/* Updates for blue color */
+.text-\[\#2851a3\] {
+  color: #4a6fa5;
+}
+
+.dark .text-\[\#2851a3\] {
+  color: #5d82b8;
+}
+
+.bg-\[\#2851a3\] {
+  background-color: #4a6fa5;
+}
+
+.dark .bg-\[\#2851a3\] {
+  background-color: #5d82b8;
+}
+
+.hover\:bg-\[\#1a3e7e\]:hover {
+  background-color: rgba(74, 111, 165, 0.8);
+}
+
+.dark .hover\:bg-\[\#1a3e7e\]:hover {
+  background-color: rgba(93, 130, 184, 0.8);
+}
+
+/* Menu chip styles for dark mode */
+.dark .bg-blue-100 {
+  @apply bg-blue-900/30;
+}
+
+.dark .border-\[\#2851a3\]\/20 {
+  @apply border-blue-400/30;
+}
+
+.dark .hover\:bg-blue-200 {
+  @apply hover:bg-blue-800/50;
+}
+
+/* Price text in dark mode */
+.dark .text-gray-800 {
+  @apply text-white;
 }

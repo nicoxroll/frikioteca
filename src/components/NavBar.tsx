@@ -1,6 +1,7 @@
 import { Menu as MenuIcon } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { ThemeToggle } from "./ThemeToggle";
 import { Button } from "./ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "./ui/sheet";
 
@@ -44,7 +45,7 @@ const NavBar = () => {
   return (
     <nav
       className={`fixed w-full top-0 z-50 transition-all duration-500 ${
-        scrolled ? "bg-white shadow-md" : "bg-transparent"
+        scrolled ? "bg-white dark:bg-gray-900 shadow-md" : "bg-transparent"
       }`}
     >
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -57,7 +58,7 @@ const NavBar = () => {
             />
             <span
               className={`ml-2 text-xl font-bold font-playfair cursor-pointer ${
-                scrolled ? "text-[#2851a3]" : "text-white"
+                scrolled ? "text-[#2851a3] dark:text-blue-300" : "text-white"
               }`}
               onClick={() => navigateToPage("/")}
             >
@@ -70,7 +71,7 @@ const NavBar = () => {
                 variant="ghost"
                 className={`font-playfair ${
                   scrolled
-                    ? "text-[#2851a3] hover:text-[#2851a3] hover:bg-blue-50"
+                    ? "text-[#2851a3] dark:text-blue-300 hover:text-[#2851a3] hover:bg-blue-50 dark:hover:bg-gray-800"
                     : "text-white hover:text-white hover:bg-white/10"
                 }`}
                 onClick={() => navigateToPage("/")}
@@ -121,15 +122,19 @@ const NavBar = () => {
               >
                 Nosotros
               </Button>
+              <ThemeToggle scrolled={scrolled} />
             </div>
           </div>
-          <div className="md:hidden">
+          <div className="md:hidden flex items-center gap-2">
+            <ThemeToggle scrolled={scrolled} />
             <Sheet>
               <SheetTrigger asChild>
                 <Button variant="ghost" size="icon">
                   <MenuIcon
                     className={
-                      scrolled ? "h-6 w-6 text-[#2851a3]" : "h-6 w-6 text-white"
+                      scrolled
+                        ? "h-6 w-6 text-[#2851a3] dark:text-blue-300"
+                        : "h-6 w-6 text-white"
                     }
                   />
                 </Button>

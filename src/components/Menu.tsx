@@ -71,7 +71,7 @@ const Menu = () => {
                     {items.map((item) => (
                       <span
                         key={item}
-                        className="inline-block bg-blue-100 text-[#2851a3] rounded-full px-3 py-1 text-sm font-playfair border border-[#2851a3]/20 hover:bg-blue-200 transition-colors duration-200"
+                        className="inline-block bg-blue-100 text-frikioteca-blue dark:text-blue-300 rounded-full px-3 py-1 text-sm font-playfair border border-[#2851a3]/20 hover:bg-blue-200 transition-colors duration-200"
                       >
                         {item}
                       </span>
