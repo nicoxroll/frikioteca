@@ -1,4 +1,6 @@
 import { Calendar, Trophy, Users } from "lucide-react";
+import { useNavigate } from "react-router-dom";
+import { Button } from "./ui/button";
 import { CardContent, CardHeader, CardTitle } from "./ui/card";
 
 const events = [
@@ -26,6 +28,14 @@ const events = [
 ];
 
 const Events = () => {
+  const navigate = useNavigate();
+
+  // Navigation function with scroll to top
+  const navigateToEvents = () => {
+    navigate("/eventos");
+    window.scrollTo(0, 0);
+  };
+
   return (
     <section id="eventos" className="py-16 px-4 bg-gray-50">
       <div className="max-w-7xl mx-auto">
@@ -67,6 +77,16 @@ const Events = () => {
               </CardContent>
             </div>
           ))}
+        </div>
+
+        {/* Add "Ver Todos" button */}
+        <div className="text-center mt-12">
+          <Button
+            className="bg-[#2851a3] hover:bg-[#1a3e7e] font-playfair text-lg px-8 py-6"
+            onClick={navigateToEvents}
+          >
+            Ver Todos
+          </Button>
         </div>
       </div>
     </section>

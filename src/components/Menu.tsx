@@ -28,6 +28,12 @@ const menuItems = {
 const Menu = () => {
   const navigate = useNavigate();
 
+  // Navigation function with scroll to top
+  const navigateToCarta = () => {
+    navigate("/carta");
+    window.scrollTo(0, 0);
+  };
+
   return (
     <section id="menu" className="py-16 px-4 bg-white">
       <div className="max-w-7xl mx-auto">
@@ -80,7 +86,7 @@ const Menu = () => {
         <div className="text-center mt-12 opacity-0 animate-fade-up animate-fill-forwards animate-delay-400">
           <Button
             className="bg-[#2851a3] hover:bg-[#1a3e7e] font-playfair text-lg px-8 py-6"
-            onClick={() => navigate("/carta")}
+            onClick={navigateToCarta}
           >
             Ver Carta Completa
           </Button>
