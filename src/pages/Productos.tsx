@@ -10,13 +10,7 @@ import {
 } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { supabase } from "@/integrations/supabase/client";
-import {
-  Center,
-  Environment,
-  Html,
-  OrbitControls,
-  useGLTF,
-} from "@react-three/drei";
+import { Center, Html, OrbitControls, useGLTF } from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { useQuery } from "@tanstack/react-query";
 import { ArrowLeft, Loader2, RefreshCw, Smartphone, Star } from "lucide-react";
@@ -224,11 +218,11 @@ function ThreeDModelViewer({ modelUrl, fallbackImage }: ModelViewerProps) {
         <color attach="background" args={["#f5f5f7"]} />
         <fog attach="fog" args={["#f5f5f7", 10, 20]} />
 
-        {/* Improved lighting */}
+        {/* Enhanced lighting to replace Environment */}
         <ambientLight intensity={0.7} />
         <directionalLight
           position={[10, 10, 5]}
-          intensity={1}
+          intensity={1.5}
           castShadow
           shadow-mapSize-width={1024}
           shadow-mapSize-height={1024}
@@ -240,6 +234,11 @@ function ThreeDModelViewer({ modelUrl, fallbackImage }: ModelViewerProps) {
           intensity={1.5}
           castShadow
         />
+        <hemisphereLight
+          args={["#ffffff", "#f5f5f7", 1]}
+          position={[0, 50, 0]}
+        />
+        <directionalLight position={[-10, -10, -5]} intensity={0.5} />
 
         {/* Rotating platform effect */}
         <group position={[0, -0.5, 0]}>
@@ -268,7 +267,7 @@ function ThreeDModelViewer({ modelUrl, fallbackImage }: ModelViewerProps) {
           autoRotate
           autoRotateSpeed={0.5}
         />
-        <Environment preset="sunset" />
+        {/* Remove Environment component that was causing CORS issues */}
       </Canvas>
     </div>
   );
@@ -411,11 +410,11 @@ const ProductDetail = ({
                   <color attach="background" args={["#f5f5f7"]} />
                   <fog attach="fog" args={["#f5f5f7", 10, 20]} />
 
-                  {/* Lighting */}
+                  {/* Enhanced lighting to replace Environment */}
                   <ambientLight intensity={0.7} />
                   <directionalLight
                     position={[10, 10, 5]}
-                    intensity={1}
+                    intensity={1.5}
                     castShadow
                     shadow-mapSize-width={1024}
                     shadow-mapSize-height={1024}
@@ -427,6 +426,11 @@ const ProductDetail = ({
                     intensity={1.5}
                     castShadow
                   />
+                  <hemisphereLight
+                    args={["#ffffff", "#f5f5f7", 1]}
+                    position={[0, 50, 0]}
+                  />
+                  <directionalLight position={[-10, -10, -5]} intensity={0.5} />
 
                   {/* Model display */}
                   <group position={[0, -0.5, 0]}>
@@ -463,7 +467,7 @@ const ProductDetail = ({
                     autoRotate
                     autoRotateSpeed={0.5}
                   />
-                  <Environment preset="sunset" />
+                  {/* Remove Environment component that was causing CORS issues */}
                 </Canvas>
               </Suspense>
             </div>
