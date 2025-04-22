@@ -8,14 +8,51 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
+import { toast } from "@/components/ui/use-toast";
 import { supabase } from "@/integrations/supabase/client";
-import { Center, Html, OrbitControls, useGLTF } from "@react-three/drei";
+import {
+  Center,
+  Environment,
+  Html,
+  OrbitControls,
+  useGLTF,
+} from "@react-three/drei";
 import { Canvas } from "@react-three/fiber";
 import { useQuery } from "@tanstack/react-query";
-import { ArrowLeft, Loader2, RefreshCw, Smartphone, Star } from "lucide-react";
-import { Suspense, useEffect, useState } from "react";
+import {
+  ArrowLeft,
+  ChevronDown,
+  Loader2,
+  Maximize,
+  Minimize,
+  RefreshCw,
+  Smartphone,
+} from "lucide-react";
+import { env } from "process";
+import { Suspense, useEffect, useRef, useState } from "react";
 import * as THREE from "three";
+
+// Environment options for the model viewer
+const ENVIRONMENT_OPTIONS = [
+  { id: "sunset", label: "Atardecer" },
+  { id: "dawn", label: "Amanecer" },
+  { id: "night", label: "Noche" },
+  { id: "warehouse", label: "Almacén" },
+  { id: "forest", label: "Bosque" },
+  { id: "apartment", label: "Apartamento" },
+  { id: "studio", label: "Estudio" },
+  { id: "city", label: "Ciudad" },
+  { id: "park", label: "Parque" },
+  { id: "lobby", label: "Lobby" },
+  { id: "medieval", label: "Café Medieval", file: "/images/medieval_hdr.hdr" },
+];
 
 type ProductStand = {
   id: string;
@@ -38,9 +75,14 @@ const fetchProductsStand = async (): Promise<ProductStand[]> => {
   return data || [];
 };
 
-// Check if the device supports WebXR
+// Mejoramos la detección de soporte AR para ser más inclusiva
 const isXRSupported = () => {
-  return "xr" in navigator;
+  // Verificación más completa para AR que funciona mejor en dispositivos móviles
+  return (
+    "xr" in navigator ||
+    /android/i.test(navigator.userAgent) || // Android soporta Scene Viewer
+    /iPad|iPhone|iPod/.test(navigator.userAgent)
+  ); // iOS soporta Quick Look
 };
 
 // Component to load and display the 3D model
@@ -76,11 +118,49 @@ function ThreeDModelViewer({ modelUrl, fallbackImage }: ModelViewerProps) {
   const [retryCount, setRetryCount] = useState(0);
   const [isMobile, setIsMobile] = useState(false);
   const [supportsAR, setSupportsAR] = useState(false);
+  const [selectedEnvironment, setSelectedEnvironment] = useState(
+    ENVIRONMENT_OPTIONS[0]
+  );
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   // Fix the Supabase URL to use your actual project URL
   const formattedUrl = modelUrl.startsWith("http")
     ? modelUrl
     : `https://znssmbdsvqftxfmycpvd.supabase.co/storage/v1/object/public/models/${modelUrl}`;
+
+  // Fullscreen toggle function
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      if (containerRef.current?.requestFullscreen) {
+        containerRef.current.requestFullscreen().catch((err) => {
+          toast({
+            title: "Error al activar pantalla completa",
+            description: err.message,
+            variant: "destructive",
+          });
+        });
+        setIsFullscreen(true);
+      }
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+        setIsFullscreen(false);
+      }
+    }
+  };
+
+  // Listen for fullscreen change events
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+    };
+  }, []);
 
   useEffect(() => {
     // Check if device is mobile
@@ -198,62 +278,95 @@ function ThreeDModelViewer({ modelUrl, fallbackImage }: ModelViewerProps) {
   }
 
   return (
-    <div className="h-[70vh] bg-gradient-to-b from-gray-50 to-gray-200 rounded-lg shadow-inner relative">
-      {isMobile && supportsAR && (
-        <a
-          href={`intent://arvr.google.com/scene-viewer/1.0?file=${encodeURIComponent(
-            formattedUrl
-          )}&mode=ar_only#Intent;scheme=https;package=com.google.android.googlequicksearchbox;action=android.intent.action.VIEW;S.browser_fallback_url=https://developers.google.com/ar;end;`}
-          className="absolute top-3 right-3 z-10 bg-[#2851a3] text-white px-3 py-2 rounded-md shadow-md flex items-center"
+    <div
+      ref={containerRef}
+      className="h-[70vh] bg-gradient-to-b from-gray-50 to-gray-200 dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-inner relative"
+    >
+      {/* Controls */}
+      <div className="absolute top-3 left-3 z-10 flex gap-2">
+        {/* Environment selector */}
+        <DropdownMenu>
+          <DropdownMenuTrigger asChild>
+            <Button
+              variant="outline"
+              className="bg-white/80 dark:bg-gray-800/80 text-sm flex items-center gap-2"
+            >
+              Entorno: {selectedEnvironment.label}
+              <ChevronDown className="h-4 w-4" />
+            </Button>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent className="dark:bg-gray-800 dark:text-gray-100 dark:border-gray-700">
+            {ENVIRONMENT_OPTIONS.map((env) => (
+              <DropdownMenuItem
+                key={env.id}
+                onClick={() => setSelectedEnvironment(env)}
+                className={`${
+                  env.id === selectedEnvironment.id
+                    ? "bg-gray-100 dark:bg-gray-700"
+                    : ""
+                } dark:hover:bg-gray-700 dark:focus:bg-gray-700`}
+              >
+                {env.label}
+              </DropdownMenuItem>
+            ))}
+          </DropdownMenuContent>
+        </DropdownMenu>
+
+        {/* Movemos el botón AR aquí y le damos el mismo estilo */}
+        {isMobile && (
+          <a
+            href={`intent://arvr.google.com/scene-viewer/1.0?file=${encodeURIComponent(
+              formattedUrl
+            )}&mode=ar_only#Intent;scheme=https;package=com.google.android.googlequicksearchbox;action=android.intent.action.VIEW;S.browser_fallback_url=https://developers.google.com/ar;end;`}
+            className="bg-white/80 dark:bg-gray-800/80 text-sm rounded-md px-3 py-2 border border-input flex items-center gap-2 hover:bg-accent hover:text-accent-foreground"
+          >
+            <Smartphone className="h-4 w-4" /> Ver en AR
+          </a>
+        )}
+
+        {/* Fullscreen toggle */}
+        <Button
+          variant="outline"
+          size="icon"
+          onClick={toggleFullscreen}
+          className="bg-white/80 dark:bg-gray-800/80"
         >
-          <Smartphone className="h-4 w-4 mr-2" /> Ver en AR
-        </a>
-      )}
+          {isFullscreen ? (
+            <Minimize className="h-4 w-4" />
+          ) : (
+            <Maximize className="h-4 w-4" />
+          )}
+        </Button>
+      </div>
+
+      {/* Eliminamos el botón AR de la esquina superior derecha */}
+
       <Canvas
         camera={{ position: [0, 0, 5], fov: 45 }}
         gl={{ antialias: true }}
         shadows
         className="w-full h-full"
       >
-        <color attach="background" args={["#f5f5f7"]} />
-        <fog attach="fog" args={["#f5f5f7", 10, 20]} />
+        {/* Dynamic Environment based on selection */}
+        {selectedEnvironment.file ? (
+          <Environment files={selectedEnvironment.file} background={true} />
+        ) : (
+          <Environment
+            preset={selectedEnvironment.id as any}
+            background={true}
+          />
+        )}
 
-        {/* Enhanced lighting to replace Environment */}
-        <ambientLight intensity={0.7} />
-        <directionalLight
-          position={[10, 10, 5]}
-          intensity={1.5}
-          castShadow
-          shadow-mapSize-width={1024}
-          shadow-mapSize-height={1024}
-        />
-        <spotLight
-          position={[-10, 10, 10]}
-          angle={0.3}
-          penumbra={1}
-          intensity={1.5}
-          castShadow
-        />
-        <hemisphereLight
-          args={["#ffffff", "#f5f5f7", 1]}
-          position={[0, 50, 0]}
-        />
-        <directionalLight position={[-10, -10, -5]} intensity={0.5} />
+        {/* Reduced lighting to let the environment map be more visible */}
+        <ambientLight intensity={0.2} />
+        <directionalLight position={[10, 10, 5]} intensity={0.8} castShadow />
 
         {/* Rotating platform effect */}
         <group position={[0, -0.5, 0]}>
           <Center scale={1.5}>
             <Model url={formattedUrl} />
           </Center>
-          {/* Add a subtle platform/floor */}
-          <mesh
-            rotation={[-Math.PI / 2, 0, 0]}
-            position={[0, -0.5, 0]}
-            receiveShadow
-          >
-            <circleGeometry args={[3, 32]} />
-            <meshStandardMaterial color="#ffffff" opacity={0.5} transparent />
-          </mesh>
+          {/* Eliminamos el círculo blanco/plataforma */}
         </group>
 
         {/* Enhanced controls */}
@@ -267,7 +380,6 @@ function ThreeDModelViewer({ modelUrl, fallbackImage }: ModelViewerProps) {
           autoRotate
           autoRotateSpeed={0.5}
         />
-        {/* Remove Environment component that was causing CORS issues */}
       </Canvas>
     </div>
   );
@@ -283,6 +395,44 @@ const ProductDetail = ({
 }) => {
   const [isMobile, setIsMobile] = useState(false);
   const [supportsAR, setSupportsAR] = useState(false);
+  const [selectedEnvironment, setSelectedEnvironment] = useState(
+    ENVIRONMENT_OPTIONS[0]
+  );
+  const [isFullscreen, setIsFullscreen] = useState(false);
+  const containerRef = useRef<HTMLDivElement>(null);
+
+  // Fullscreen toggle function
+  const toggleFullscreen = () => {
+    if (!document.fullscreenElement) {
+      if (containerRef.current?.requestFullscreen) {
+        containerRef.current.requestFullscreen().catch((err) => {
+          toast({
+            title: "Error al activar pantalla completa",
+            description: err.message,
+            variant: "destructive",
+          });
+        });
+        setIsFullscreen(true);
+      }
+    } else {
+      if (document.exitFullscreen) {
+        document.exitFullscreen();
+        setIsFullscreen(false);
+      }
+    }
+  };
+
+  // Listen for fullscreen change events
+  useEffect(() => {
+    const handleFullscreenChange = () => {
+      setIsFullscreen(!!document.fullscreenElement);
+    };
+
+    document.addEventListener("fullscreenchange", handleFullscreenChange);
+    return () => {
+      document.removeEventListener("fullscreenchange", handleFullscreenChange);
+    };
+  }, []);
 
   useEffect(() => {
     // Check if device is mobile
@@ -305,12 +455,8 @@ const ProductDetail = ({
   }, []);
 
   return (
-    <div className="max-w-5xl mx-auto px-4 py-8 bg-white rounded-lg shadow-lg">
-      <Button
-        onClick={onBack}
-        variant="ghost"
-        className="mb-6 hover:bg-gray-100"
-      >
+    <div>
+      <Button onClick={onBack} variant="outline" className="mb-6 font-playfair">
         <ArrowLeft className="mr-2 h-4 w-4" />
         Volver a productos
       </Button>
@@ -331,16 +477,6 @@ const ProductDetail = ({
             <h1 className="text-3xl font-bold text-[#2851a3] font-playfair mb-4">
               {product.name}
             </h1>
-            <div className="flex items-center mb-4">
-              <div className="flex text-yellow-400">
-                <Star className="w-5 h-5 fill-current" />
-                <Star className="w-5 h-5 fill-current" />
-                <Star className="w-5 h-5 fill-current" />
-                <Star className="w-5 h-5 fill-current" />
-                <Star className="w-5 h-5 text-gray-300" />
-              </div>
-              <span className="ml-2 text-gray-600">(4.0)</span>
-            </div>
             <p className="text-gray-700 mb-6 font-playfair">
               {product.description}
             </p>
@@ -369,32 +505,83 @@ const ProductDetail = ({
       {/* 3D Model Section */}
       {product.model_3d && (
         <div className="mt-10">
-          <h2 className="text-2xl font-bold text-[#2851a3] font-playfair mb-6">
+          <h2 className="text-2xl font-bold text-[#2851a3] dark:text-blue-400 font-playfair mb-6">
             Vista 3D del Producto
           </h2>
           <Separator className="mb-6" />
 
-          <div className="relative bg-gradient-to-b from-gray-50 to-gray-200 rounded-lg shadow-lg overflow-hidden">
-            {isMobile && supportsAR && (
-              <a
-                href={`intent://arvr.google.com/scene-viewer/1.0?file=${encodeURIComponent(
-                  product.model_3d.startsWith("http")
-                    ? product.model_3d
-                    : `https://znssmbdsvqftxfmycpvd.supabase.co/storage/v1/object/public/models/${product.model_3d}`
-                )}&mode=ar_only#Intent;scheme=https;package=com.google.android.googlequicksearchbox;action=android.intent.action.VIEW;S.browser_fallback_url=https://developers.google.com/ar;end;`}
-                className="absolute top-3 right-3 z-10 bg-[#2851a3] text-white px-3 py-2 rounded-md shadow-md flex items-center"
+          <div
+            ref={containerRef}
+            className="relative bg-gradient-to-b from-gray-50 to-gray-200 dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-lg overflow-hidden"
+          >
+            {/* Controls */}
+            <div className="absolute top-3 left-3 z-10 flex gap-2">
+              {/* Environment selector */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="bg-white/80 dark:bg-gray-800/80 text-sm flex items-center gap-2"
+                  >
+                    Entorno: {selectedEnvironment.label}
+                    <ChevronDown className="h-4 w-4" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent className="dark:bg-gray-800 dark:text-gray-100 dark:border-gray-700">
+                  {ENVIRONMENT_OPTIONS.map((env) => (
+                    <DropdownMenuItem
+                      key={env.id}
+                      onClick={() => setSelectedEnvironment(env)}
+                      className={`${
+                        env.id === selectedEnvironment.id
+                          ? "bg-gray-100 dark:bg-gray-700"
+                          : ""
+                      } dark:hover:bg-gray-700 dark:focus:bg-gray-700`}
+                    >
+                      {env.label}
+                    </DropdownMenuItem>
+                  ))}
+                </DropdownMenuContent>
+              </DropdownMenu>
+
+              {/* Movemos el botón AR aquí y le damos el mismo estilo */}
+              {isMobile && (
+                <a
+                  href={`intent://arvr.google.com/scene-viewer/1.0?file=${encodeURIComponent(
+                    product.model_3d.startsWith("http")
+                      ? product.model_3d
+                      : `https://znssmbdsvqftxfmycpvd.supabase.co/storage/v1.object/public/models/${product.model_3d}`
+                  )}&mode=ar_only#Intent;scheme=https;package=com.google.android.googlequicksearchbox;action=android.intent.action.VIEW;S.browser_fallback_url=https://developers.google.com/ar;end;`}
+                  className="bg-white/80 dark:bg-gray-800/80 text-sm rounded-md px-3 py-2 border border-input flex items-center gap-2 hover:bg-accent hover:text-accent-foreground"
+                >
+                  <Smartphone className="h-4 w-4" /> Ver en AR
+                </a>
+              )}
+
+              {/* Fullscreen toggle */}
+              <Button
+                variant="outline"
+                size="icon"
+                onClick={toggleFullscreen}
+                className="bg-white/80 dark:bg-gray-800/80"
               >
-                <Smartphone className="h-4 w-4 mr-2" /> Ver en AR
-              </a>
-            )}
+                {isFullscreen ? (
+                  <Minimize className="h-4 w-4" />
+                ) : (
+                  <Maximize className="h-4 w-4" />
+                )}
+              </Button>
+            </div>
+
+            {/* Eliminamos el botón AR de la esquina superior derecha */}
 
             <div className="h-[50vh]">
               <Suspense
                 fallback={
                   <div className="h-full flex items-center justify-center">
                     <div className="text-center">
-                      <Loader2 className="h-12 w-12 text-[#2851a3] animate-spin mx-auto mb-4" />
-                      <p className="text-gray-600 text-lg">
+                      <Loader2 className="h-12 w-12 text-[#2851a3] dark:text-blue-400 animate-spin mx-auto mb-4" />
+                      <p className="text-gray-600 dark:text-gray-300 text-lg">
                         Cargando modelo 3D...
                       </p>
                     </div>
@@ -407,30 +594,26 @@ const ProductDetail = ({
                   shadows
                   className="w-full h-full"
                 >
-                  <color attach="background" args={["#f5f5f7"]} />
-                  <fog attach="fog" args={["#f5f5f7", 10, 20]} />
+                  {/* Dynamic Environment based on selection */}
+                  {selectedEnvironment.file ? (
+                    <Environment
+                      files={selectedEnvironment.file}
+                      background={true}
+                    />
+                  ) : (
+                    <Environment
+                      preset={selectedEnvironment.id as any}
+                      background={true}
+                    />
+                  )}
 
-                  {/* Enhanced lighting to replace Environment */}
-                  <ambientLight intensity={0.7} />
+                  {/* Minimal lighting */}
+                  <ambientLight intensity={0.2} />
                   <directionalLight
                     position={[10, 10, 5]}
-                    intensity={1.5}
-                    castShadow
-                    shadow-mapSize-width={1024}
-                    shadow-mapSize-height={1024}
-                  />
-                  <spotLight
-                    position={[-10, 10, 10]}
-                    angle={0.3}
-                    penumbra={1}
-                    intensity={1.5}
+                    intensity={0.8}
                     castShadow
                   />
-                  <hemisphereLight
-                    args={["#ffffff", "#f5f5f7", 1]}
-                    position={[0, 50, 0]}
-                  />
-                  <directionalLight position={[-10, -10, -5]} intensity={0.5} />
 
                   {/* Model display */}
                   <group position={[0, -0.5, 0]}>
@@ -439,22 +622,11 @@ const ProductDetail = ({
                         url={
                           product.model_3d.startsWith("http")
                             ? product.model_3d
-                            : `https://znssmbdsvqftxfmycpvd.supabase.co/storage/v1/object/public/models/${product.model_3d}`
+                            : `https://znssmbdsvqftxfmycpvd.supabase.co/storage/v1.object/public/models/${product.model_3d}`
                         }
                       />
                     </Center>
-                    <mesh
-                      rotation={[-Math.PI / 2, 0, 0]}
-                      position={[0, -0.5, 0]}
-                      receiveShadow
-                    >
-                      <circleGeometry args={[3, 32]} />
-                      <meshStandardMaterial
-                        color="#ffffff"
-                        opacity={0.5}
-                        transparent
-                      />
-                    </mesh>
+                    {/* Eliminamos el círculo blanco/plataforma */}
                   </group>
 
                   <OrbitControls
@@ -467,19 +639,53 @@ const ProductDetail = ({
                     autoRotate
                     autoRotateSpeed={0.5}
                   />
-                  {/* Remove Environment component that was causing CORS issues */}
                 </Canvas>
               </Suspense>
             </div>
 
-            <div className="p-4 bg-gray-50">
-              <p className="text-gray-600 font-playfair">
-                <span className="font-medium">Interactúa con el modelo:</span>{" "}
-                <span>Rotar</span> (clic y arrastrar), <span>Zoom</span> (rueda
-                del mouse), <span>Mover</span> (clic derecho y arrastrar)
-              </p>
+            <div className="p-4 bg-gray-50 dark:bg-gray-800">
+              <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-2">
+                <p className="text-gray-600 dark:text-gray-300 font-playfair">
+                  <span className="font-medium">Interactúa con el modelo:</span>{" "}
+                  <span>Rotar</span> (clic y arrastrar), <span>Zoom</span>{" "}
+                  (rueda del mouse), <span>Mover</span> (clic derecho y
+                  arrastrar)
+                </p>
+
+                {/* Mobile environment selector for better UX on small screens */}
+                <div className="md:hidden">
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="text-xs flex items-center gap-1 dark:bg-gray-700 dark:text-gray-200"
+                      >
+                        Cambiar entorno
+                        <ChevronDown className="h-3 w-3" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="dark:bg-gray-800 dark:text-gray-100 dark:border-gray-700">
+                      {ENVIRONMENT_OPTIONS.map((env) => (
+                        <DropdownMenuItem
+                          key={env.id}
+                          onClick={() => setSelectedEnvironment(env)}
+                          className={`${
+                            env.id === selectedEnvironment.id
+                              ? "bg-gray-100 dark:bg-gray-700"
+                              : ""
+                          } dark:hover:bg-gray-700 dark:focus:bg-gray-700`}
+                        >
+                          {env.label}
+                        </DropdownMenuItem>
+                      ))}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </div>
+
               {isMobile && supportsAR && (
-                <p className="text-green-600 font-medium mt-2 font-playfair">
+                <p className="text-green-600 dark:text-green-400 font-medium mt-2 font-playfair">
                   ¡Dispositivo compatible con AR! Usa el botón "Ver en AR" para
                   visualizar el modelo en tu espacio real.
                 </p>
@@ -506,7 +712,6 @@ const Productos = () => {
     const handleScroll = () => {
       setScrollPosition(window.scrollY);
     };
-
     window.addEventListener("scroll", handleScroll);
     return () => {
       window.removeEventListener("scroll", handleScroll);
@@ -522,7 +727,8 @@ const Productos = () => {
           userAgent
         );
       setIsMobile(isMobileDevice);
-      setSupportsAR(isXRSupported() && isMobileDevice);
+      // Simplificamos esto para considerar cualquier dispositivo móvil como compatible con AR
+      setSupportsAR(isMobileDevice);
     };
 
     checkMobile();
