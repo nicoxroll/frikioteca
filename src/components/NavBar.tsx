@@ -28,14 +28,16 @@ const NavBar = () => {
     };
   }, []);
 
-  // Updated function to navigate to page or scroll to top
+  // Updated function to always scroll to top when navigation buttons are clicked
   const navigateToPage = (path: string) => {
     if (location.pathname === path) {
       // If already on the page, scroll to top
       window.scrollTo({ top: 0, behavior: "smooth" });
     } else {
-      // Navigate to the page (which will load at the top by default)
+      // Navigate to the page and then scroll to top
       navigate(path);
+      // Force scroll to top after navigation
+      window.scrollTo(0, 0);
     }
   };
 
