@@ -20,6 +20,7 @@ const fetchProducts = async (): Promise<Product[]> => {
   const { data, error } = await supabase
     .from("products")
     .select("*")
+    .eq("is_item", false) // Only fetch cafe products (not items)
     .order("category", { ascending: true });
 
   if (error) throw error;
@@ -98,7 +99,7 @@ const Carta = () => {
         <div className="relative z-10 text-center px-4 py-20 opacity-0 animate-fade-up animate-fill-forwards animate-delay-200">
           <img
             src="/images/logo.png"
-            alt="Maná Cafe Logo"
+            alt="Frikioteca Logo"
             className="h-24 w-auto mx-auto mb-6 drop-shadow-[0_4px_4px_rgba(0,0,0,0.6)]"
           />
           <h1 className="text-4xl md:text-5xl font-bold mb-4 font-playfair text-shadow">

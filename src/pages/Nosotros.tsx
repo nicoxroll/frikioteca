@@ -86,7 +86,7 @@ const NosotrosPage = () => {
                       Nuestra Pasión
                     </h3>
                     <p className="text-gray-600 font-playfair">
-                      Maná Cafe nació en 2020 como un espacio que combina dos
+                      Frikioteca nació en 2020 como un espacio que combina dos
                       grandes pasiones: el café de especialidad y los juegos.
                     </p>
                   </div>

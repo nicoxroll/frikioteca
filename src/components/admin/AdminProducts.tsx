@@ -16,6 +16,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { toast } from "@/components/ui/sonner";
+import { Switch } from "@/components/ui/switch";
 import {
   Table,
   TableBody,
@@ -34,15 +35,16 @@ import {
   Plus,
   Search,
   Trash2,
-  Camera,
 } from "lucide-react";
 import { useState } from "react";
 
 // Define predefined categories
-const PRODUCT_CATEGORIES = [
+const ITEM_CATEGORIES = ["Figuras", "Remeras", "Tazas", "Items", "TCG"];
+
+const CAFE_CATEGORIES = [
   "Café de Especialidad",
   "Café Frio",
-  "Especiales",
+  "Bebidas Especiales",
   "Panaderia Dulce",
   "Panaderia Salado",
 ];
@@ -55,7 +57,8 @@ type Product = {
   category: string;
   image: string;
   stock: number;
-  model_3d?: string; // Add field for 3D model URL
+  model_3d?: string;
+  is_item?: boolean; // Add is_item field
 };
 
 const fetchProducts = async (): Promise<Product[]> => {
@@ -80,7 +83,8 @@ const AdminProducts = () => {
     category: "",
     image: "",
     stock: 0,
-    model_3d: "", // Add field for 3D model URL
+    model_3d: "",
+    is_item: false, // Add is_item field with default value
   });
   const [modelFile, setModelFile] = useState<File | null>(null);
 
@@ -171,7 +175,8 @@ const AdminProducts = () => {
         category: product.category,
         image: product.image,
         stock: product.stock || 0,
-        model_3d: product.model_3d || "", // Initialize model_3d field
+        model_3d: product.model_3d || "",
+        is_item: product.is_item || false, // Set is_item from product or default to false
       });
       setCurrentProduct(product);
     } else {
@@ -182,7 +187,8 @@ const AdminProducts = () => {
         category: "",
         image: "",
         stock: 0,
-        model_3d: "", // Initialize empty model_3d field
+        model_3d: "",
+        is_item: false, // Default to false for new products
       });
       setCurrentProduct(null);
     }
@@ -216,26 +222,35 @@ const AdminProducts = () => {
     }
   };
 
+  const handleIsItemChange = (checked: boolean) => {
+    // Reset category when changing is_item to avoid invalid category selections
+    setFormData({
+      ...formData,
+      is_item: checked,
+      category: "",
+    });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     let modelUrl = formData.model_3d;
-    
+
     // Si hay un archivo seleccionado, súbelo a Supabase Storage
     if (modelFile) {
       try {
         const filename = `${Date.now()}-${modelFile.name}`;
         const { data, error } = await supabase.storage
-          .from('models')
+          .from("models")
           .upload(filename, modelFile);
-          
+
         if (error) throw error;
-        
+
         // Obtén la URL pública del archivo
         const { data: urlData } = supabase.storage
-          .from('models')
+          .from("models")
           .getPublicUrl(filename);
-          
+
         modelUrl = urlData.publicUrl;
       } catch (error) {
         console.error("Error uploading file:", error);
@@ -243,13 +258,13 @@ const AdminProducts = () => {
         return;
       }
     }
-    
+
     // Continúa con la lógica existente pero usa modelUrl
     const productData = {
       ...formData,
-      model_3d: modelUrl
+      model_3d: modelUrl,
     };
-    
+
     if (!formData.name || !formData.category || !formData.image) {
       toast.error("Por favor completa todos los campos requeridos");
       return;
@@ -393,6 +408,24 @@ const AdminProducts = () => {
                   required
                 />
               </div>
+
+              {/* Add is_item toggle */}
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="is_item" className="text-right">
+                  ¿Es Item?
+                </Label>
+                <div className="flex items-center space-x-2 col-span-3">
+                  <Switch
+                    id="is_item"
+                    checked={formData.is_item}
+                    onCheckedChange={handleIsItemChange}
+                  />
+                  <Label htmlFor="is_item" className="text-sm text-gray-500">
+                    {formData.is_item ? "Si" : "No"}
+                  </Label>
+                </div>
+              </div>
+
               <div className="grid grid-cols-4 items-center gap-4">
                 <Label htmlFor="description" className="text-right">
                   Descripción
@@ -450,7 +483,11 @@ const AdminProducts = () => {
                       <SelectValue placeholder="Seleccionar categoría" />
                     </SelectTrigger>
                     <SelectContent>
-                      {PRODUCT_CATEGORIES.map((category) => (
+                      {/* Show categories based on is_item toggle */}
+                      {(formData.is_item
+                        ? ITEM_CATEGORIES
+                        : CAFE_CATEGORIES
+                      ).map((category) => (
                         <SelectItem key={category} value={category}>
                           {category}
                         </SelectItem>
@@ -475,28 +512,31 @@ const AdminProducts = () => {
                   <Image className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
                 </div>
               </div>
-              {/* Add 3D model field */}
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="model_3d" className="text-right">
-                  Modelo 3D (GLB)
-                </Label>
-                <div className="col-span-3">
-                  <div className="flex gap-2">
-                    <Input 
-                      type="file" 
-                      id="model_3d_file"
-                      accept=".glb"
-                      onChange={handleFileChange} 
-                      className="flex-1" 
-                    />
-                    {formData.model_3d && (
-                      <div className="text-xs text-muted-foreground mt-1">
-                        Archivo actual: {formData.model_3d.split('/').pop()}
-                      </div>
-                    )}
+
+              {/* Add 3D model field - only show if it's an item */}
+              {formData.is_item && (
+                <div className="grid grid-cols-4 items-center gap-4">
+                  <Label htmlFor="model_3d" className="text-right">
+                    Modelo 3D (GLB)
+                  </Label>
+                  <div className="col-span-3">
+                    <div className="flex gap-2">
+                      <Input
+                        type="file"
+                        id="model_3d_file"
+                        accept=".glb"
+                        onChange={handleFileChange}
+                        className="flex-1"
+                      />
+                      {formData.model_3d && (
+                        <div className="text-xs text-muted-foreground mt-1">
+                          Archivo actual: {formData.model_3d.split("/").pop()}
+                        </div>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
+              )}
             </div>
             <DialogFooter>
               <Button

@@ -22,11 +22,11 @@ const Footer = () => {
             <div className="flex items-center">
               <img
                 src="/images/logo.png"
-                alt="Maná Cafe Logo"
+                alt="Frikio Logo"
                 className="h-8 w-auto drop-shadow-[0_2px_2px_rgba(0,0,0,0.2)]"
               />
               <span className="ml-2 text-xl font-bold text-[#2851a3] font-playfair">
-                Maná Cafe
+                Frikioteca
               </span>
             </div>
             <p className="text-sm font-playfair">
@@ -127,7 +127,7 @@ const Footer = () => {
 
         <div className="border-t border-blue-100 mt-8 pt-8 text-center">
           <p className="text-sm font-playfair text-gray-500">
-            © {currentYear} Maná Cafe. Todos los derechos reservados.
+            © {currentYear} Frikioteca. Todos los derechos reservados.
           </p>
         </div>
       </div>

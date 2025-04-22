@@ -22,15 +22,15 @@ const Hero = () => {
       <div className="relative z-10 text-center px-4 animate-fade-up">
         <img
           src="/images/logo.png"
-          alt="Maná Cafe Logo"
+          alt="Frikioteca Logo"
           className="h-24 w-auto mx-auto mb-6 drop-shadow-[0_4px_4px_rgba(0,0,0,0.6)]"
         />
         <h1 className="text-4xl md:text-6xl font-bold mb-4 font-playfair text-shadow">
           <span className="text-[#2851a3] drop-shadow-[0_2px_2px_rgba(0,0,0,0.6)]">
-            Maná
+            Frikioteca
           </span>{" "}
           <span className="text-white drop-shadow-[0_2px_2px_rgba(0,0,0,0.6)]">
-            Cafe
+            Comunidad
           </span>
         </h1>
 
