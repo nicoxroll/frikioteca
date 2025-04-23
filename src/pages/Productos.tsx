@@ -186,6 +186,7 @@ const Productos = () => {
     data: products = [],
     isLoading,
     error,
+    isInitialLoading,
   } = useQuery({
     queryKey: ["products"],
     queryFn: fetchProductsStand,
@@ -244,10 +245,17 @@ const Productos = () => {
     navigate('/productos', { replace: true });
   };
 
-  if (isLoading) {
+  // Show loading state for initial data fetch and when filters change
+  if (isLoading || isInitialLoading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <Loader2 className="h-8 w-8 text-[#2851a3] animate-spin" />
+      <div className="min-h-screen bg-gray-50 flex flex-col">
+        <NavBar />
+        <div className="flex-1 flex items-center justify-center">
+          <div className="text-center">
+            <Loader2 className="h-12 w-12 text-[#2851a3] animate-spin mx-auto mb-4" />
+            <p className="text-gray-600 font-playfair">Cargando productos...</p>
+          </div>
+        </div>
       </div>
     );
   }

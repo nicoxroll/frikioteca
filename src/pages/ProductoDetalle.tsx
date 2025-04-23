@@ -367,6 +367,7 @@ const ProductoDetalle = () => {
   const [supportsAR, setSupportsAR] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
   const { addItem } = useCart();
+  const [scrollPosition, setScrollPosition] = useState(0);
   
   // Fetch single product by ID
   const { data: product, isLoading, error } = useQuery({
@@ -416,6 +417,18 @@ const ProductoDetalle = () => {
     };
 
     checkMobile();
+  }, []);
+
+  // Handle scroll for parallax effect
+  useEffect(() => {
+    const handleScroll = () => {
+      setScrollPosition(window.scrollY);
+    };
+
+    window.addEventListener("scroll", handleScroll);
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+    };
   }, []);
 
   // Function to add the current product to the cart
@@ -474,6 +487,25 @@ const ProductoDetalle = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <NavBar />
+      
+      {/* Hero section with parallax background */}
+      <div className="relative flex items-center justify-center min-h-[30vh] overflow-hidden">
+        <div
+          className="absolute inset-0 w-full h-full bg-cover bg-center"
+          style={{
+            backgroundImage: `url("https://images.pexels.com/photos/4992952/pexels-photo-4992952.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2")`,
+            transform: `translateY(${scrollPosition * 0.15}px)`,
+          }}
+        ></div>
+        {/* Semi-transparent overlay for better readability */}
+        <div className="absolute inset-0 bg-black bg-opacity-40 z-0"></div>
+
+        <div className="relative z-10 text-center px-4 py-10 opacity-0 animate-fade-up animate-fill-forwards animate-delay-200">
+          <p className="text-gray-100 text-2xl md:text-3xl max-w-2xl mx-auto font-playfair font-medium drop-shadow-[0_2px_2px_rgba(0,0,0,0.6)]">
+            {product.category}
+          </p>
+        </div>
+      </div>
       
       <main className="max-w-7xl mx-auto px-4 py-12">
         <Button onClick={handleBack} variant="outline" className="mb-6 font-playfair">
