@@ -166,7 +166,7 @@ const NosotrosPage = () => {
                   <div className="space-y-2">
                     <label
                       htmlFor="name"
-                      className="font-playfair text-gray-700"
+                      className="font-playfair text-gray-700 font-medium"
                     >
                       Nombre
                     </label>
@@ -176,13 +176,13 @@ const NosotrosPage = () => {
                       value={formData.name}
                       onChange={handleInputChange}
                       placeholder="Tu nombre"
-                      className="font-playfair"
+                      className="font-playfair bg-transparent border-gray-400"
                     />
                   </div>
                   <div className="space-y-2">
                     <label
                       htmlFor="email"
-                      className="font-playfair text-gray-700"
+                      className="font-playfair text-gray-700 font-medium"
                     >
                       Email
                     </label>
@@ -193,14 +193,14 @@ const NosotrosPage = () => {
                       value={formData.email}
                       onChange={handleInputChange}
                       placeholder="Tu email"
-                      className="font-playfair"
+                      className="font-playfair bg-transparent border-gray-400"
                     />
                   </div>
                 </div>
                 <div className="space-y-2">
                   <label
                     htmlFor="message"
-                    className="font-playfair text-gray-700"
+                    className="font-playfair text-gray-700 font-medium"
                   >
                     Mensaje
                   </label>
@@ -210,7 +210,7 @@ const NosotrosPage = () => {
                     value={formData.message}
                     onChange={handleInputChange}
                     placeholder="¿En qué podemos ayudarte?"
-                    className="h-32 resize-none font-playfair"
+                    className="h-32 resize-none font-playfair bg-transparent border-gray-400"
                   />
                 </div>
                 <Button

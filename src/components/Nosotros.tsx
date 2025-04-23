@@ -160,6 +160,7 @@ const Nosotros = () => {
                         className="font-playfair bg-transparent border-gray-400"
                       />
                     </div>
+                    
                     <div className="space-y-2">
                       <label
                         htmlFor="email"
