@@ -39,6 +39,7 @@ import {
 } from "lucide-react";
 import { Suspense, useEffect, useRef, useState } from "react";
 import * as THREE from "three";
+import { useNavigate } from "react-router-dom";
 
 // Environment options for the model viewer
 const ENVIRONMENT_OPTIONS = [
@@ -729,6 +730,7 @@ const Productos = () => {
   const [isMobile, setIsMobile] = useState(false);
   const [supportsAR, setSupportsAR] = useState(false);
   const { addItem } = useCart(); // Use the cart hook
+  const navigate = useNavigate();
 
   // Handle adding product to cart
   const handleAddToCart = (product: ProductStand, event: React.MouseEvent) => {
@@ -907,7 +909,7 @@ const Productos = () => {
                       </CardContent>
                       <CardFooter className="flex gap-2">
                         <Button
-                          onClick={() => viewProductDetails(product)}
+                          onClick={() => navigate(`/producto/${product.id}`)}
                           className="flex-1 bg-[#2851a3] hover:bg-[#1a3e7e]"
                         >
                           Ver Detalles

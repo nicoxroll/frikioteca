@@ -35,8 +35,8 @@ const Newsletter = () => {
         </p>
         
         {isSubscribed ? (
-          <div className="bg-white p-4 rounded-lg border border-green-500">
-            <p className="text-gray-800 font-playfair">
+          <div className="bg-white/20 backdrop-blur-sm p-4 rounded-lg border border-green-500">
+            <p className="text-white font-playfair">
               ¡Gracias por suscribirte! Pronto recibirás nuestras novedades.
             </p>
           </div>
@@ -47,11 +47,11 @@ const Newsletter = () => {
               placeholder="Tu email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              className="bg-white/80 backdrop-blur-sm text-gray-800 placeholder:text-gray-500 border-white/30"
+              className="bg-white/20 backdrop-blur-sm text-white placeholder:text-gray-200 border-white/20"
             />
             <Button 
               type="submit" 
-              className="bg-[#2851a3] hover:bg-[#1a3e7e] whitespace-nowrap"
+              className="bg-[#2851a3]/90 hover:bg-[#1a3e7e] whitespace-nowrap backdrop-blur-sm"
             >
               <Mail className="mr-2 h-4 w-4" />
               Suscribirse

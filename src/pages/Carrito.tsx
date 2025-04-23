@@ -170,9 +170,9 @@ const Carrito = () => {
     };
   }, []);
 
-  // New function to navigate to product page
+  // Update the navigation function
   const navigateToProduct = (productId: string) => {
-    navigate(`/productos/${productId}`);
+    navigate(`/producto/${productId}`);
   };
 
   return (

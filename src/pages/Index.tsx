@@ -99,7 +99,7 @@ const Index = () => {
                   <div className="flex justify-between items-center">
                     <span className="text-lg font-bold text-[#2851a3]">$120.00</span>
                     <Button 
-                      onClick={() => navigate("/productos")}
+                      onClick={() => navigate("/producto/5fae0c74-6f77-4eca-9c79-0b90ef6fca4d")}
                       variant="outline" 
                       className="border-[#2851a3] text-[#2851a3] hover:bg-[#2851a3] hover:text-white"
                     >
@@ -124,7 +124,7 @@ const Index = () => {
                   <div className="flex justify-between items-center">
                     <span className="text-lg font-bold text-[#2851a3]">$35.00</span>
                     <Button 
-                      onClick={() => navigate("/productos")}
+                      onClick={() => navigate("/producto/7e9d3a18-2c5b-4f1a-b98d-12c943f58a31")}
                       variant="outline" 
                       className="border-[#2851a3] text-[#2851a3] hover:bg-[#2851a3] hover:text-white"
                     >
@@ -149,7 +149,7 @@ const Index = () => {
                   <div className="flex justify-between items-center">
                     <span className="text-lg font-bold text-[#2851a3]">$75.00</span>
                     <Button 
-                      onClick={() => navigate("/productos")}
+                      onClick={() => navigate("/producto/9c8b7a65-4d32-4e21-af10-fe987b654321")}
                       variant="outline" 
                       className="border-[#2851a3] text-[#2851a3] hover:bg-[#2851a3] hover:text-white"
                     >

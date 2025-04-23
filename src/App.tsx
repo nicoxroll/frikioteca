@@ -13,6 +13,7 @@ import NosotrosPage from "./pages/Nosotros";
 import NotFound from "./pages/NotFound";
 import OrderSuccess from "./pages/OrderSuccess";
 import Productos from "./pages/Productos";
+import ProductoDetalle from "./pages/ProductoDetalle";
 import { ThemeProvider } from "./providers/ThemeProvider";
 import { CartProvider } from "./providers/cart-provider";
 
@@ -30,6 +31,7 @@ const App = () => (
               <Route path="/" element={<Index />} />
               <Route path="/carta" element={<Carta />} />
               <Route path="/productos" element={<Productos />} />
+              <Route path="/producto/:id" element={<ProductoDetalle />} />
               <Route path="/checkout" element={<Checkout />} />
               <Route path="/order-success" element={<OrderSuccess />} />
               <Route path="/eventos" element={<EventosPage />} />
