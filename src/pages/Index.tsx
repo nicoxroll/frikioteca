@@ -3,6 +3,7 @@ import Footer from "@/components/Footer";
 import Hero from "@/components/Hero";
 import Menu from "@/components/Menu";
 import NavBar from "@/components/NavBar";
+import Newsletter from "@/components/Newsletter";
 import { useEffect, useState } from "react";
 import { useLocation } from "react-router-dom";
 
@@ -70,15 +71,23 @@ const Index = () => {
         >
           <Menu />
         </section>
+        
+        {/* Newsletter section with background image - removed chess pattern and shadow */}
         <div
-          className="chess-pattern-divider h-60 w-full bg-fixed bg-center bg-no-repeat"
+          className="relative h-96 w-full bg-fixed bg-center bg-no-repeat"
           style={{
             backgroundImage:
-              "url('https://images.pexels.com/photos/13311961/pexels-photo-13311961.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1')",
+              "url('https://images.pexels.com/photos/7978128/pexels-photo-7978128.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2)",
             backgroundAttachment: "fixed",
             backgroundSize: "cover",
           }}
-        ></div>
+        >
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-full max-w-xl p-8 opacity-0 animate-fade-up animate-fill-forwards animate-delay-300">
+              <Newsletter />
+            </div>
+          </div>
+        </div>
       </main>
 
       <Footer />
