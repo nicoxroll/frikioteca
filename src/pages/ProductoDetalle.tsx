@@ -53,7 +53,6 @@ const ENVIRONMENT_OPTIONS = [
   { id: "city", label: "Ciudad" },
   { id: "park", label: "Parque" },
   { id: "lobby", label: "Lobby" },
-  { id: "medieval", label: "Café Medieval", file: "/images/medieval_hdr.hdr" },
 ];
 
 // Type definition for Product
