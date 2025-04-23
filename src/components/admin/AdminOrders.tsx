@@ -297,7 +297,7 @@ const AdminOrders = () => {
       // First create a new customer if needed
       let finalCustomerId = customerId;
 
-      if (!customerId && newCustomer && customerOption === "new") {
+      if (!customerId && newCustomer) {
         const { data: customerData, error: customerError } = await supabase
           .from("customers")
           .insert([newCustomer])
@@ -499,7 +499,11 @@ const AdminOrders = () => {
       customerId: customerOption === "existing" ? selectedCustomerId : null,
       items: selectedProducts,
       total,
-      newCustomer: customerOption === "new" ? newCustomer : undefined,
+      newCustomer: customerOption === "new" 
+        ? newCustomer 
+        : customerOption === "none" 
+          ? { name: "Cliente sin registrar", email: "sin_registro@frikioteca.com", phone: "" } 
+          : undefined,
     });
   };
 
