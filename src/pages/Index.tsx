@@ -76,85 +76,79 @@ const Index = () => {
           <div className="max-w-7xl mx-auto px-4">
             <div className="text-center mb-12">
               <h2 className="text-3xl font-bold text-[#2851a3] font-playfair mb-4">
-                Productos Destacados
+                Categorías de Productos
               </h2>
               <p className="text-gray-600 max-w-2xl mx-auto font-playfair">
-                Descubre nuestra selección de productos exclusivos y ediciones limitadas para los verdaderos entusiastas
+                Explora nuestra variedad de productos organizados por categorías, para que encuentres exactamente lo que estás buscando.
               </p>
             </div>
             
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 mb-12">
-              {/* Product Card 1 */}
-              <div className="bg-white rounded-lg shadow-md overflow-hidden transition-transform duration-300 hover:shadow-xl hover:-translate-y-1">
-                <div className="h-64 overflow-hidden">
+            {/* 2x2 Grid for Categories */}
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 mb-12">
+              {/* Category 1: TCG */}
+              <div className="bg-white rounded-lg shadow-md overflow-hidden transition-transform duration-300 hover:shadow-xl hover:-translate-y-1 h-64">
+                <div className="h-full relative group">
                   <img 
-                    src="https://images.pexels.com/photos/1579708/pexels-photo-1579708.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" 
-                    alt="Producto destacado" 
-                    className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                    src="https://images.pexels.com/photos/6615071/pexels-photo-6615071.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=2" 
+                    alt="Trading Card Games" 
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                   />
-                </div>
-                <div className="p-6">
-                  <h3 className="text-xl font-bold text-[#2851a3] font-playfair mb-2">Figura Coleccionable</h3>
-                  <p className="text-gray-600 mb-4">Edición limitada de nuestra colección exclusiva para fanáticos.</p>
-                  <div className="flex justify-between items-center">
-                    <span className="text-lg font-bold text-[#2851a3]">$120.00</span>
-                    <Button 
-                      onClick={() => navigate("/producto/5fae0c74-6f77-4eca-9c79-0b90ef6fca4d")}
-                      variant="outline" 
-                      className="border-[#2851a3] text-[#2851a3] hover:bg-[#2851a3] hover:text-white"
-                    >
-                      Ver detalles
-                    </Button>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end">
+                    <div className="p-6 w-full">
+                      <h3 className="text-2xl font-bold text-white font-playfair mb-2">TCG</h3>
+                      <p className="text-gray-200 mb-4">Trading Card Games y accesorios para tus juegos favoritos</p>
+                    </div>
                   </div>
                 </div>
               </div>
               
-              {/* Product Card 2 */}
-              <div className="bg-white rounded-lg shadow-md overflow-hidden transition-transform duration-300 hover:shadow-xl hover:-translate-y-1">
-                <div className="h-64 overflow-hidden">
+              {/* Category 2: Remeras */}
+              <div className="bg-white rounded-lg shadow-md overflow-hidden transition-transform duration-300 hover:shadow-xl hover:-translate-y-1 h-64">
+                <div className="h-full relative group">
+                  <img 
+                    src="https://images.pexels.com/photos/4066293/pexels-photo-4066293.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" 
+                    alt="Remeras" 
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end">
+                    <div className="p-6 w-full">
+                      <h3 className="text-2xl font-bold text-white font-playfair mb-2">Remeras</h3>
+                      <p className="text-gray-200 mb-4">Encuentra tu estilo con nuestros diseños exclusivos</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Category 3: Items */}
+              <div className="bg-white rounded-lg shadow-md overflow-hidden transition-transform duration-300 hover:shadow-xl hover:-translate-y-1 h-64">
+                <div className="h-full relative group">
+                  <img 
+                    src="https://images.pexels.com/photos/18054995/pexels-photo-18054995/free-photo-of-arte-pintura-pintando-cuadro.jpeg?auto=compress&cs=tinysrgb&w=800&lazy=load" 
+                    alt="Items" 
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end">
+                    <div className="p-6 w-full">
+                      <h3 className="text-2xl font-bold text-white font-playfair mb-2">Items</h3>
+                      <p className="text-gray-200 mb-4">Artículos coleccionables y figuras de tus sagas preferidas</p>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              
+              {/* Category 4: Tazas */}
+              <div className="bg-white rounded-lg shadow-md overflow-hidden transition-transform duration-300 hover:shadow-xl hover:-translate-y-1 h-64">
+                <div className="h-full relative group">
                   <img 
                     src="https://images.pexels.com/photos/8105034/pexels-photo-8105034.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" 
-                    alt="Producto destacado" 
-                    className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
+                    alt="Tazas" 
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                   />
-                </div>
-                <div className="p-6">
-                  <h3 className="text-xl font-bold text-[#2851a3] font-playfair mb-2">Taza Temática</h3>
-                  <p className="text-gray-600 mb-4">Disfruta tu bebida favorita con nuestras tazas de diseño único.</p>
-                  <div className="flex justify-between items-center">
-                    <span className="text-lg font-bold text-[#2851a3]">$35.00</span>
-                    <Button 
-                      onClick={() => navigate("/producto/7e9d3a18-2c5b-4f1a-b98d-12c943f58a31")}
-                      variant="outline" 
-                      className="border-[#2851a3] text-[#2851a3] hover:bg-[#2851a3] hover:text-white"
-                    >
-                      Ver detalles
-                    </Button>
-                  </div>
-                </div>
-              </div>
-              
-              {/* Product Card 3 */}
-              <div className="bg-white rounded-lg shadow-md overflow-hidden transition-transform duration-300 hover:shadow-xl hover:-translate-y-1">
-                <div className="h-64 overflow-hidden">
-                  <img 
-                    src="https://images.pexels.com/photos/1983037/pexels-photo-1983037.jpeg?auto=compress&cs=tinysrgb&w=1260&h=750&dpr=1" 
-                    alt="Producto destacado" 
-                    className="w-full h-full object-cover transition-transform duration-300 hover:scale-105"
-                  />
-                </div>
-                <div className="p-6">
-                  <h3 className="text-xl font-bold text-[#2851a3] font-playfair mb-2">Set de Cartas</h3>
-                  <p className="text-gray-600 mb-4">Colección premium de cartas con ilustraciones originales.</p>
-                  <div className="flex justify-between items-center">
-                    <span className="text-lg font-bold text-[#2851a3]">$75.00</span>
-                    <Button 
-                      onClick={() => navigate("/producto/9c8b7a65-4d32-4e21-af10-fe987b654321")}
-                      variant="outline" 
-                      className="border-[#2851a3] text-[#2851a3] hover:bg-[#2851a3] hover:text-white"
-                    >
-                      Ver detalles
-                    </Button>
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent flex items-end">
+                    <div className="p-6 w-full">
+                      <h3 className="text-2xl font-bold text-white font-playfair mb-2">Tazas</h3>
+                      <p className="text-gray-200 mb-4">Disfruta tu bebida favorita con nuestros diseños exclusivos</p>
+                    </div>
                   </div>
                 </div>
               </div>

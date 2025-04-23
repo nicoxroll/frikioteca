@@ -8,53 +8,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "@/components/ui/use-toast";
 import { useCart } from "@/hooks/use-cart";
 import { supabase } from "@/integrations/supabase/client";
-import {
-  Center,
-  Environment,
-  Html,
-  OrbitControls,
-  useGLTF,
-} from "@react-three/drei";
-import { Canvas } from "@react-three/fiber";
 import { useQuery } from "@tanstack/react-query";
-import {
-  ArrowLeft,
-  ChevronDown,
-  Loader2,
-  Maximize,
-  Minimize,
-  RefreshCw,
-  ShoppingCart,
-  Smartphone,
-} from "lucide-react";
-import { Suspense, useEffect, useRef, useState } from "react";
-import * as THREE from "three";
-import { useNavigate } from "react-router-dom";
-
-// Environment options for the model viewer
-const ENVIRONMENT_OPTIONS = [
-  { id: "sunset", label: "Atardecer" },
-  { id: "dawn", label: "Amanecer" },
-  { id: "night", label: "Noche" },
-  { id: "warehouse", label: "Almacén" },
-  { id: "forest", label: "Bosque" },
-  { id: "apartment", label: "Apartamento" },
-  { id: "studio", label: "Estudio" },
-  { id: "city", label: "Ciudad" },
-  { id: "park", label: "Parque" },
-  { id: "lobby", label: "Lobby" },
-  { id: "medieval", label: "Café Medieval", file: "/images/medieval_hdr.hdr" },
-];
+import { ArrowLeft, Loader2, ShoppingCart } from "lucide-react";
+import { useEffect, useState } from "react";
+import { useNavigate, useSearchParams } from "react-router-dom";
 
 type ProductStand = {
   id: string;
@@ -63,7 +24,7 @@ type ProductStand = {
   price: number;
   category: string;
   image: string;
-  model_3d?: string; // Add model_3d field
+  model_3d?: string; // Keep this field for reference but we won't use it here
 };
 
 const fetchProductsStand = async (): Promise<ProductStand[]> => {
@@ -77,317 +38,7 @@ const fetchProductsStand = async (): Promise<ProductStand[]> => {
   return data || [];
 };
 
-// Mejoramos la detección de soporte AR para ser más inclusiva
-const isXRSupported = () => {
-  // Verificación más completa para AR que funciona mejor en dispositivos móviles
-  return (
-    "xr" in navigator ||
-    /android/i.test(navigator.userAgent) || // Android soporta Scene Viewer
-    /iPad|iPhone|iPod/.test(navigator.userAgent)
-  ); // iOS soporta Quick Look
-};
-
-// Component to load and display the 3D model
-function Model({ url }: { url: string }) {
-  const [error, setError] = useState<Error | null>(null);
-  const { scene, errors } = useGLTF(url, undefined, (e) => {
-    console.error("Error loading model:", e);
-    setError(e);
-  });
-
-  // If there was an error loading the model
-  if (error) {
-    return (
-      <Html center>
-        <div className="bg-white p-2 rounded text-red-500">
-          Error loading model
-        </div>
-      </Html>
-    );
-  }
-
-  return <primitive object={scene} />;
-}
-
-type ModelViewerProps = {
-  modelUrl: string;
-  fallbackImage?: string;
-};
-
-function ThreeDModelViewer({ modelUrl, fallbackImage }: ModelViewerProps) {
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [retryCount, setRetryCount] = useState(0);
-  const [isMobile, setIsMobile] = useState(false);
-  const [supportsAR, setSupportsAR] = useState(false);
-  const [selectedEnvironment, setSelectedEnvironment] = useState(
-    ENVIRONMENT_OPTIONS[0]
-  );
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  // Fix the Supabase URL to use your actual project URL
-  const formattedUrl = modelUrl.startsWith("http")
-    ? modelUrl
-    : `https://znssmbdsvqftxfmycpvd.supabase.co/storage/v1/object/public/models/${modelUrl}`;
-
-  // Fullscreen toggle function
-  const toggleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      if (containerRef.current?.requestFullscreen) {
-        containerRef.current.requestFullscreen().catch((err) => {
-          toast({
-            title: "Error al activar pantalla completa",
-            description: err.message,
-            variant: "destructive",
-          });
-        });
-        setIsFullscreen(true);
-      }
-    } else {
-      if (document.exitFullscreen) {
-        document.exitFullscreen();
-        setIsFullscreen(false);
-      }
-    }
-  };
-
-  // Listen for fullscreen change events
-  useEffect(() => {
-    const handleFullscreenChange = () => {
-      setIsFullscreen(!!document.fullscreenElement);
-    };
-
-    document.addEventListener("fullscreenchange", handleFullscreenChange);
-    return () => {
-      document.removeEventListener("fullscreenchange", handleFullscreenChange);
-    };
-  }, []);
-
-  useEffect(() => {
-    // Check if device is mobile
-    const checkMobile = () => {
-      const userAgent = navigator.userAgent || navigator.vendor;
-      const isMobileDevice =
-        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-          userAgent
-        );
-      setIsMobile(isMobileDevice);
-    };
-
-    // Check AR support
-    const checkARSupport = async () => {
-      // Check if the browser supports WebXR
-      setSupportsAR(isXRSupported() && isMobile);
-    };
-
-    checkMobile();
-    checkARSupport();
-  }, []);
-
-  useEffect(() => {
-    // Reset error state when URL changes or on retry
-    setError(null);
-    setLoading(true);
-
-    let isActive = true; // Flag to track if component is still mounted
-
-    // Prefetch the model to check if it can be loaded
-    const preloadModel = async () => {
-      try {
-        console.log("Attempting to load model from:", formattedUrl);
-        // Check if the URL is accessible
-        const response = await fetch(formattedUrl, {
-          method: "HEAD",
-          // Add cache control to avoid caching issues
-          cache: "no-cache",
-          headers: {
-            "Cache-Control": "no-cache",
-          },
-        });
-
-        if (!response.ok) {
-          throw new Error(`Model URL returned status ${response.status}`);
-        }
-
-        // Only update state if component is still mounted
-        if (isActive) {
-          setLoading(false);
-        }
-      } catch (err) {
-        console.error("Error loading 3D model:", err);
-        // Only update state if component is still mounted
-        if (isActive) {
-          setError(
-            "Error al cargar el modelo 3D. Por favor, intente de nuevo más tarde."
-          );
-          setLoading(false);
-        }
-      }
-    };
-
-    preloadModel();
-
-    // Cleanup function to help prevent WebGL context issues
-    return () => {
-      isActive = false; // Mark component as unmounted
-
-      // Use try-catch in case THREE is not fully loaded
-      try {
-        THREE.Cache.clear();
-        // Additional cleanup for any cached GLTF resources
-        useGLTF.clear(formattedUrl);
-      } catch (e) {
-        console.warn("Cleanup error:", e);
-      }
-    };
-  }, [formattedUrl, retryCount]);
-
-  const handleRetry = () => {
-    setRetryCount((prev) => prev + 1);
-  };
-
-  if (loading) {
-    return (
-      <div className="flex flex-col items-center justify-center h-64 bg-gray-100 rounded-md">
-        <Loader2 className="h-8 w-8 text-[#2851a3] animate-spin mb-2" />
-        <p className="text-sm text-gray-600">Cargando modelo 3D...</p>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="flex flex-col items-center justify-center h-96 bg-gray-100 rounded-md p-4">
-        <p className="text-red-500 text-center mb-4">{error}</p>
-        {fallbackImage && (
-          <img
-            src={fallbackImage}
-            alt="Imagen del producto"
-            className="max-h-48 object-contain mb-4"
-          />
-        )}
-        <Button
-          onClick={handleRetry}
-          variant="outline"
-          className="flex items-center gap-2"
-        >
-          <RefreshCw className="h-4 w-4" />
-          Reintentar
-        </Button>
-      </div>
-    );
-  }
-
-  return (
-    <div
-      ref={containerRef}
-      className="h-[70vh] bg-gradient-to-b from-gray-50 to-gray-200 dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-inner relative"
-    >
-      {/* Controls */}
-      <div className="absolute top-3 left-3 z-10 flex gap-2">
-        {/* Environment selector */}
-        <DropdownMenu>
-          <DropdownMenuTrigger asChild>
-            <Button
-              variant="outline"
-              className="bg-white/80 dark:bg-gray-800/80 text-sm flex items-center gap-2"
-            >
-              Entorno: {selectedEnvironment.label}
-              <ChevronDown className="h-4 w-4" />
-            </Button>
-          </DropdownMenuTrigger>
-          <DropdownMenuContent className="dark:bg-gray-800 dark:text-gray-100 dark:border-gray-700">
-            {ENVIRONMENT_OPTIONS.map((env) => (
-              <DropdownMenuItem
-                key={env.id}
-                onClick={() => setSelectedEnvironment(env)}
-                className={`${
-                  env.id === selectedEnvironment.id
-                    ? "bg-gray-100 dark:bg-gray-700"
-                    : ""
-                } dark:hover:bg-gray-700 dark:focus:bg-gray-700`}
-              >
-                {env.label}
-              </DropdownMenuItem>
-            ))}
-          </DropdownMenuContent>
-        </DropdownMenu>
-
-        {/* Movemos el botón AR aquí y le damos el mismo estilo */}
-        {isMobile && (
-          <a
-            href={`intent://arvr.google.com/scene-viewer/1.0?file=${encodeURIComponent(
-              formattedUrl
-            )}&mode=ar_only#Intent;scheme=https;package=com.google.android.googlequicksearchbox;action=android.intent.action.VIEW;S.browser_fallback_url=https://developers.google.com/ar;end;`}
-            className="bg-white/80 dark:bg-gray-800/80 text-sm rounded-md px-3 py-2 border border-input flex items-center gap-2 hover:bg-accent hover:text-accent-foreground"
-          >
-            <Smartphone className="h-4 w-4" /> Ver en AR
-          </a>
-        )}
-
-        {/* Fullscreen toggle */}
-        <Button
-          variant="outline"
-          size="icon"
-          onClick={toggleFullscreen}
-          className="bg-white/80 dark:bg-gray-800/80"
-        >
-          {isFullscreen ? (
-            <Minimize className="h-4 w-4" />
-          ) : (
-            <Maximize className="h-4 w-4" />
-          )}
-        </Button>
-      </div>
-
-      {/* Eliminamos el botón AR de la esquina superior derecha */}
-
-      <Canvas
-        camera={{ position: [0, 0, 5], fov: 45 }}
-        gl={{ antialias: true }}
-        shadows
-        className="w-full h-full"
-      >
-        {/* Dynamic Environment based on selection */}
-        {selectedEnvironment.file ? (
-          <Environment files={selectedEnvironment.file} background={true} />
-        ) : (
-          <Environment
-            preset={selectedEnvironment.id as any}
-            background={true}
-          />
-        )}
-
-        {/* Reduced lighting to let the environment map be more visible */}
-        <ambientLight intensity={0.2} />
-        <directionalLight position={[10, 10, 5]} intensity={0.8} castShadow />
-
-        {/* Rotating platform effect */}
-        <group position={[0, -0.5, 0]}>
-          <Center scale={1.5}>
-            <Model url={formattedUrl} />
-          </Center>
-          {/* Eliminamos el círculo blanco/plataforma */}
-        </group>
-
-        {/* Enhanced controls */}
-        <OrbitControls
-          enablePan={true}
-          enableZoom={true}
-          enableRotate={true}
-          minDistance={2}
-          maxDistance={10}
-          dampingFactor={0.05}
-          autoRotate
-          autoRotateSpeed={0.5}
-        />
-      </Canvas>
-    </div>
-  );
-}
-
-// New component for product details view
+// New component for product details view (simplified version without 3D)
 const ProductDetail = ({
   product,
   onBack,
@@ -395,14 +46,7 @@ const ProductDetail = ({
   product: ProductStand;
   onBack: () => void;
 }) => {
-  const [isMobile, setIsMobile] = useState(false);
-  const [supportsAR, setSupportsAR] = useState(false);
-  const [selectedEnvironment, setSelectedEnvironment] = useState(
-    ENVIRONMENT_OPTIONS[0]
-  );
-  const [isFullscreen, setIsFullscreen] = useState(false);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const { addItem } = useCart(); // Use the cart hook
+  const { addItem } = useCart();
 
   // Function to add the current product to the cart
   const handleAddToCart = () => {
@@ -420,59 +64,6 @@ const ProductDetail = ({
       variant: "default",
     });
   };
-
-  // Fullscreen toggle function
-  const toggleFullscreen = () => {
-    if (!document.fullscreenElement) {
-      if (containerRef.current?.requestFullscreen) {
-        containerRef.current.requestFullscreen().catch((err) => {
-          toast({
-            title: "Error al activar pantalla completa",
-            description: err.message,
-            variant: "destructive",
-          });
-        });
-        setIsFullscreen(true);
-      }
-    } else {
-      if (document.exitFullscreen) {
-        document.exitFullscreen();
-        setIsFullscreen(false);
-      }
-    }
-  };
-
-  // Listen for fullscreen change events
-  useEffect(() => {
-    const handleFullscreenChange = () => {
-      setIsFullscreen(!!document.fullscreenElement);
-    };
-
-    document.addEventListener("fullscreenchange", handleFullscreenChange);
-    return () => {
-      document.removeEventListener("fullscreenchange", handleFullscreenChange);
-    };
-  }, []);
-
-  useEffect(() => {
-    // Check if device is mobile
-    const checkMobile = () => {
-      const userAgent = navigator.userAgent || navigator.vendor;
-      const isMobileDevice =
-        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-          userAgent
-        );
-      setIsMobile(isMobileDevice);
-    };
-
-    // Check AR support
-    const checkARSupport = async () => {
-      setSupportsAR(isXRSupported() && isMobile);
-    };
-
-    checkMobile();
-    checkARSupport();
-  }, []);
 
   return (
     <div>
@@ -525,196 +116,15 @@ const ProductDetail = ({
         </div>
       </div>
 
-      {/* 3D Model Section */}
+      {/* If the product has a 3D model, show a button to view detailed page */}
       {product.model_3d && (
-        <div className="mt-10">
-          <h2 className="text-2xl font-bold text-[#2851a3] dark:text-blue-400 font-playfair mb-6">
-            Vista 3D del Producto
-          </h2>
-          <Separator className="mb-6" />
-
-          <div
-            ref={containerRef}
-            className="relative bg-gradient-to-b from-gray-50 to-gray-200 dark:from-gray-800 dark:to-gray-900 rounded-lg shadow-lg overflow-hidden"
+        <div className="mt-6 text-center">
+          <Button 
+            onClick={() => window.location.href = `/producto/${product.id}`}
+            className="bg-[#2851a3] hover:bg-[#1a3e7e]"
           >
-            {/* Controls */}
-            <div className="absolute top-3 left-3 z-10 flex gap-2">
-              {/* Environment selector */}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    variant="outline"
-                    className="bg-white/80 dark:bg-gray-800/80 text-sm flex items-center gap-2"
-                  >
-                    Entorno: {selectedEnvironment.label}
-                    <ChevronDown className="h-4 w-4" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent className="dark:bg-gray-800 dark:text-gray-100 dark:border-gray-700">
-                  {ENVIRONMENT_OPTIONS.map((env) => (
-                    <DropdownMenuItem
-                      key={env.id}
-                      onClick={() => setSelectedEnvironment(env)}
-                      className={`${
-                        env.id === selectedEnvironment.id
-                          ? "bg-gray-100 dark:bg-gray-700"
-                          : ""
-                      } dark:hover:bg-gray-700 dark:focus:bg-gray-700`}
-                    >
-                      {env.label}
-                    </DropdownMenuItem>
-                  ))}
-                </DropdownMenuContent>
-              </DropdownMenu>
-
-              {/* Movemos el botón AR aquí y le damos el mismo estilo */}
-              {isMobile && (
-                <a
-                  href={`intent://arvr.google.com/scene-viewer/1.0?file=${encodeURIComponent(
-                    product.model_3d.startsWith("http")
-                      ? product.model_3d
-                      : `https://znssmbdsvqftxfmycpvd.supabase.co/storage/v1.object/public/models/${product.model_3d}`
-                  )}&mode=ar_only#Intent;scheme=https;package=com.google.android.googlequicksearchbox;action=android.intent.action.VIEW;S.browser_fallback_url=https://developers.google.com/ar;end;`}
-                  className="bg-white/80 dark:bg-gray-800/80 text-sm rounded-md px-3 py-2 border border-input flex items-center gap-2 hover:bg-accent hover:text-accent-foreground"
-                >
-                  <Smartphone className="h-4 w-4" /> Ver en AR
-                </a>
-              )}
-
-              {/* Fullscreen toggle */}
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={toggleFullscreen}
-                className="bg-white/80 dark:bg-gray-800/80"
-              >
-                {isFullscreen ? (
-                  <Minimize className="h-4 w-4" />
-                ) : (
-                  <Maximize className="h-4 w-4" />
-                )}
-              </Button>
-            </div>
-
-            {/* Eliminamos el botón AR de la esquina superior derecha */}
-
-            <div className="h-[50vh]">
-              <Suspense
-                fallback={
-                  <div className="h-full flex items-center justify-center">
-                    <div className="text-center">
-                      <Loader2 className="h-12 w-12 text-[#2851a3] dark:text-blue-400 animate-spin mx-auto mb-4" />
-                      <p className="text-gray-600 dark:text-gray-300 text-lg">
-                        Cargando modelo 3D...
-                      </p>
-                    </div>
-                  </div>
-                }
-              >
-                <Canvas
-                  camera={{ position: [0, 0, 5], fov: 45 }}
-                  gl={{ antialias: true }}
-                  shadows
-                  className="w-full h-full"
-                >
-                  {/* Dynamic Environment based on selection */}
-                  {selectedEnvironment.file ? (
-                    <Environment
-                      files={selectedEnvironment.file}
-                      background={true}
-                    />
-                  ) : (
-                    <Environment
-                      preset={selectedEnvironment.id as any}
-                      background={true}
-                    />
-                  )}
-
-                  {/* Minimal lighting */}
-                  <ambientLight intensity={0.2} />
-                  <directionalLight
-                    position={[10, 10, 5]}
-                    intensity={0.8}
-                    castShadow
-                  />
-
-                  {/* Model display */}
-                  <group position={[0, -0.5, 0]}>
-                    <Center scale={1.5}>
-                      <Model
-                        url={
-                          product.model_3d.startsWith("http")
-                            ? product.model_3d
-                            : `https://znssmbdsvqftxfmycpvd.supabase.co/storage/v1.object/public/models/${product.model_3d}`
-                        }
-                      />
-                    </Center>
-                    {/* Eliminamos el círculo blanco/plataforma */}
-                  </group>
-
-                  <OrbitControls
-                    enablePan={true}
-                    enableZoom={true}
-                    enableRotate={true}
-                    minDistance={2}
-                    maxDistance={10}
-                    dampingFactor={0.05}
-                    autoRotate
-                    autoRotateSpeed={0.5}
-                  />
-                </Canvas>
-              </Suspense>
-            </div>
-
-            <div className="p-4 bg-gray-50 dark:bg-gray-800">
-              <div className="flex flex-col md:flex-row md:items-center justify-between gap-2 mb-2">
-                <p className="text-gray-600 dark:text-gray-300 font-playfair">
-                  <span className="font-medium">Interactúa con el modelo:</span>{" "}
-                  <span>Rotar</span> (clic y arrastrar), <span>Zoom</span>{" "}
-                  (rueda del mouse), <span>Mover</span> (clic derecho y
-                  arrastrar)
-                </p>
-
-                {/* Mobile environment selector for better UX on small screens */}
-                <div className="md:hidden">
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="text-xs flex items-center gap-1 dark:bg-gray-700 dark:text-gray-200"
-                      >
-                        Cambiar entorno
-                        <ChevronDown className="h-3 w-3" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent className="dark:bg-gray-800 dark:text-gray-100 dark:border-gray-700">
-                      {ENVIRONMENT_OPTIONS.map((env) => (
-                        <DropdownMenuItem
-                          key={env.id}
-                          onClick={() => setSelectedEnvironment(env)}
-                          className={`${
-                            env.id === selectedEnvironment.id
-                              ? "bg-gray-100 dark:bg-gray-700"
-                              : ""
-                          } dark:hover:bg-gray-700 dark:focus:bg-gray-700`}
-                        >
-                          {env.label}
-                        </DropdownMenuItem>
-                      ))}
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              </div>
-
-              {isMobile && supportsAR && (
-                <p className="text-green-600 dark:text-green-400 font-medium mt-2 font-playfair">
-                  ¡Dispositivo compatible con AR! Usa el botón "Ver en AR" para
-                  visualizar el modelo en tu espacio real.
-                </p>
-              )}
-            </div>
-          </div>
+            Ver Producto en 3D
+          </Button>
         </div>
       )}
     </div>
@@ -724,13 +134,11 @@ const ProductDetail = ({
 // Main component
 const Productos = () => {
   const [scrollPosition, setScrollPosition] = useState(0);
-  const [selectedProduct, setSelectedProduct] = useState<ProductStand | null>(
-    null
-  );
-  const [isMobile, setIsMobile] = useState(false);
-  const [supportsAR, setSupportsAR] = useState(false);
-  const { addItem } = useCart(); // Use the cart hook
+  const [selectedProduct, setSelectedProduct] = useState<ProductStand | null>(null);
+  const { addItem } = useCart();
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const categoryFilter = searchParams.get("category");
 
   // Handle adding product to cart
   const handleAddToCart = (product: ProductStand, event: React.MouseEvent) => {
@@ -760,22 +168,6 @@ const Productos = () => {
     return () => {
       window.removeEventListener("scroll", handleScroll);
     };
-  }, []);
-
-  // Add device detection
-  useEffect(() => {
-    const checkMobile = () => {
-      const userAgent = navigator.userAgent || navigator.vendor;
-      const isMobileDevice =
-        /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-          userAgent
-        );
-      setIsMobile(isMobileDevice);
-      // Simplificamos esto para considerar cualquier dispositivo móvil como compatible con AR
-      setSupportsAR(isMobileDevice);
-    };
-
-    checkMobile();
   }, []);
 
   const {
@@ -871,7 +263,8 @@ const Productos = () => {
             </p>
           </div>
         ) : (
-          categories.map((category) => (
+          // If a category filter is applied, only show that category first
+          (categoryFilter ? categories.filter(cat => cat === categoryFilter) : categories).map((category) => (
             <div key={category} className="mb-12">
               <h2 className="text-2xl font-bold text-[#2851a3] font-playfair mb-6">
                 {category}
@@ -927,6 +320,19 @@ const Productos = () => {
               </div>
             </div>
           ))
+        )}
+
+        {/* If we're filtering by category, show a button to view all products */}
+        {categoryFilter && (
+          <div className="text-center mt-12">
+            <Button 
+              onClick={() => navigate("/productos")}
+              variant="outline" 
+              className="border-[#2851a3] text-[#2851a3] hover:bg-[#2851a3] hover:text-white"
+            >
+              Ver todas las categorías
+            </Button>
+          </div>
         )}
       </main>
 
