@@ -310,7 +310,7 @@ const CheckoutPage = () => {
                       <div className="bg-gray-50 p-4 rounded-md">
                         <p className="font-medium">Retiro en Frikioteca</p>
                         <p className="text-gray-600">
-                          Calle Ejemplo 1234, Ciudad - CP 1234
+                        Calle 10 n° 1267 e/ 58 y 59
                         </p>
                         <p className="text-gray-600 mt-2">
                           Horarios: Lunes a Viernes 10hs a 19hs, Sábados 10hs a

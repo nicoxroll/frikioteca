@@ -36,7 +36,7 @@ const Location = () => {
                   Dirección
                 </h3>
                 <p className="text-gray-600 font-playfair">
-                  Calle 8 n° 1742 e/ 68 y 69
+                  Calle 10 n° 1267 e/ 58 y 59
                 </p>
                 <p className="text-gray-600 font-playfair">
                   La Plata, Buenos Aires

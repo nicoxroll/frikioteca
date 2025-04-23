@@ -99,7 +99,7 @@ const Footer = () => {
             <ul className="space-y-2 font-playfair">
               <li className="flex items-center">
                 <MapPin className="h-4 w-4 mr-2 text-[#2851a3]" />
-                <span className="text-sm">Calle 8 entre 58 y 59, La Plata</span>
+                <span className="text-sm">Calle 10 n° 1267 e/ 58 y 59, La Plata</span>
               </li>
               <li className="flex items-center">
                 <Phone className="h-4 w-4 mr-2 text-[#2851a3]" />
