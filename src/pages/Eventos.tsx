@@ -278,7 +278,7 @@ const EventosPage = () => {
             <Input
               type="text"
               placeholder="Buscar eventos por nombre, descripción o categoría..."
-              className="pl-10 py-6 font-playfair"
+              className="pl-10 py-6 font-playfair dark:bg-gray-800 dark:text-gray-100 dark:placeholder:text-gray-400 dark:border-gray-700"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
             />

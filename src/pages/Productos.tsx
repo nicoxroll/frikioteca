@@ -16,6 +16,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Separator } from "@/components/ui/separator";
 import { toast } from "@/components/ui/use-toast";
+import { useCart } from "@/hooks/use-cart";
 import { supabase } from "@/integrations/supabase/client";
 import {
   Center,
@@ -33,9 +34,9 @@ import {
   Maximize,
   Minimize,
   RefreshCw,
+  ShoppingCart,
   Smartphone,
 } from "lucide-react";
-import { env } from "process";
 import { Suspense, useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 
@@ -400,6 +401,24 @@ const ProductDetail = ({
   );
   const [isFullscreen, setIsFullscreen] = useState(false);
   const containerRef = useRef<HTMLDivElement>(null);
+  const { addItem } = useCart(); // Use the cart hook
+
+  // Function to add the current product to the cart
+  const handleAddToCart = () => {
+    addItem({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      quantity: 1,
+      image: product.image,
+    });
+
+    toast({
+      title: "Producto agregado",
+      description: `${product.name} se ha agregado al carrito`,
+      variant: "default",
+    });
+  };
 
   // Fullscreen toggle function
   const toggleFullscreen = () => {
@@ -496,7 +515,10 @@ const ProductDetail = ({
             </div>
           </div>
 
-          <Button className="w-full bg-[#2851a3] hover:bg-[#1a3e7e] py-6">
+          <Button
+            className="w-full bg-[#2851a3] hover:bg-[#1a3e7e] py-6"
+            onClick={handleAddToCart}
+          >
             Agregar al carrito
           </Button>
         </div>
@@ -706,6 +728,26 @@ const Productos = () => {
   );
   const [isMobile, setIsMobile] = useState(false);
   const [supportsAR, setSupportsAR] = useState(false);
+  const { addItem } = useCart(); // Use the cart hook
+
+  // Handle adding product to cart
+  const handleAddToCart = (product: ProductStand, event: React.MouseEvent) => {
+    event.stopPropagation(); // Prevent navigating to product details when clicking the button
+
+    addItem({
+      id: product.id,
+      name: product.name,
+      price: product.price,
+      quantity: 1,
+      image: product.image,
+    });
+
+    toast({
+      title: "Producto agregado",
+      description: `${product.name} se ha agregado al carrito`,
+      variant: "default",
+    });
+  };
 
   // Handle scroll for parallax effect
   useEffect(() => {
@@ -866,9 +908,16 @@ const Productos = () => {
                       <CardFooter className="flex gap-2">
                         <Button
                           onClick={() => viewProductDetails(product)}
-                          className="w-full bg-[#2851a3] hover:bg-[#1a3e7e]"
+                          className="flex-1 bg-[#2851a3] hover:bg-[#1a3e7e]"
                         >
                           Ver Detalles
+                        </Button>
+                        <Button
+                          onClick={(e) => handleAddToCart(product, e)}
+                          variant="outline"
+                          className="flex-none"
+                        >
+                          <ShoppingCart className="h-4 w-4" />
                         </Button>
                       </CardFooter>
                     </Card>
